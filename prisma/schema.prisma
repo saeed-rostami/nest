@@ -10,29 +10,33 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model User {
+  id         Int      @id @default(autoincrement())
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 
-model user {
-id Int @id @default(autoincrement())
-created_at DateTime @default(now())
-updated_at DateTime @updatedAt
+  email String @unique()
+  hash  String
 
-email String 
-hash  String
+  firstName String?
+  lastName  String?
 
-firstName String?
-lastName String?
+  bookmark Bookmark[]
 
-
-
+  @@map("users")
 }
 
-model bookmark {
-id Int @id @default(autoincrement())
-created_at DateTime @default(now())
-updated_at DateTime @updatedAt
+model Bookmark {
+  id         Int      @id @default(autoincrement())
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 
+  title       String?
+  description String?
+  link        String
 
-title String?
-description String?
-link String
+  userId Int
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("bookmarks")
 }

@@ -1,19 +1,43 @@
-import { PrismaService } from './../prisma/prisma.service';
-import { Injectable } from "@nestjs/common";
+import {PrismaService} from './../prisma/prisma.service';
+import {ForbiddenException, Injectable} from "@nestjs/common";
+import {AuthDto} from "./dto";
+import * as argon from "argon2";
 
 
 @Injectable({})
-export class AuthService{
+export class AuthService {
     constructor(private prisma: PrismaService) {
 
     }
 
-    login() {
-        return "lOGIN";
+    async register(dto: AuthDto) {
+
+        try {
+            // hash password
+            const hash = await argon.hash(dto.password);
+
+            // create user
+            const user = await this.prisma.user.create({
+                data: {
+                    email: dto.email,
+                    hash
+                }
+            });
+
+            delete user.hash;
+
+            return user;
+
+        } catch (error) {
+           throw new ForbiddenException(
+               error.messages
+           )
+        }
     }
 
-    register() {
-        return "REgister";
-        
+    login() {
+        return "Login";
     }
+
+
 }
