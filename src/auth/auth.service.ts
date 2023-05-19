@@ -29,14 +29,35 @@ export class AuthService {
             return user;
 
         } catch (error) {
-           throw new ForbiddenException(
-               error.messages
-           )
+            throw new ForbiddenException(
+                error.messages
+            )
         }
     }
 
-    login() {
-        return "Login";
+    async login(dto: AuthDto) {
+
+        // find user
+        const user = await this.prisma.user.findUnique({
+            where: {
+                email: dto.email
+            }
+        });
+
+        if (!user) {
+            throw new ForbiddenException("User not found");
+        }
+
+        // check password matches
+        const passwordMatch = await argon.verify(user.hash, dto.password);
+
+        if (!passwordMatch) {
+            throw new ForbiddenException("Password is incorrect");
+        }
+
+        delete user.hash;
+
+        return user;
     }
 
 
